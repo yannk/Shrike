@@ -32,10 +32,20 @@ couple your objects with their datastore(s).
     $mapper  = Shrike::Mapper->new;
     $mapper->map(User => $driver);
 
+    $user = User->new(first_name => "Yann", last_name => "Kerherve");
     $session->add($user);
 
-    ## write objects to the datastore
+    ## insert object in the store
     $session->sync;
+    printf "User is identified by '%s'\n", $user->pk_str;
+
+    ## update object in the store
+    $user->age(31);
+    $session->sync;
+    $pk = $user->pk;
+
+    $user = $session->lookup($pk);
+    is $user->first_name, "Yann";
 
 =head1 DESCRIPTION
 ...
