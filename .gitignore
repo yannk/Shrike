@@ -2,6 +2,7 @@
 !.gitignore
 !.shipit
 Makefile*
+META.yml
 !Makefile.PL
 /blib
 /build
