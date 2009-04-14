@@ -1,0 +1,12 @@
+.*
+!.gitignore
+!.shipit
+Makefile*
+!Makefile.PL
+/blib
+/build
+_build*
+Build
+/inc
+/pm_to_blib
+Shrike-*

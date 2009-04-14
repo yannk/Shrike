@@ -1,0 +1,5 @@
+steps = FindVersion, ChangeVersion, CheckChangeLog, CheckVersionsMatch, DistTest, Commit, Tag, MakeDist, DistClean
+ 
+git.tagpattern = %v
+ 
+CheckChangeLog.files = Changes
