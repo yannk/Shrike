@@ -48,7 +48,45 @@ couple your objects with their datastore(s).
     is $user->first_name, "Yann";
 
 =head1 DESCRIPTION
-...
+
+=cut
+
+=head1 FAQ
+
+=head2 What is Shrike?
+
+Shrike is a experiment to persist Moose objects in various Store, with web 
+applications in mind.
+
+=head2 Is it an ORM?
+
+No, though you could build one on top of it (and maybe we would). Shrike
+is first and foremost a persistence framework, but it doesn't assume a
+Relational model, or doesn't impose you to build SQL programatically.
+It supports non-relational datastores.
+
+=head2 But there is plenty of ORM already...
+
+Shrike is not an ORM.
+
+=head2 But ORM are good, aren't they?
+
+Seriously? ORM suck. They are good at 80% of the thing, and the 20
+remaining are very difficult if not impossible to get right.
+
+=head2 So, why should I use Shrike instead of ORM X?
+
+Maybe you should use ORM X, (especially since as I write this POD, there is
+not a single line of code written in Shrike yet).
+But If you feel trapped in your ORM, or if you are building large, distributed
+applications and you know that you want sharding, caching, denormalization,
+then maybe you should give Shrike a try and contribute.
+
+=head2 I think this is just crap, because X, Y and Z
+
+That's good bring it on, share your thoughts, as I'm not convinced myself
+yet that this is not crap, and that I shouldn't be watching 'Lost', instead.
+
 
 =cut
 
