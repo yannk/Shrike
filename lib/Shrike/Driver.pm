@@ -21,4 +21,13 @@ under the same terms as Perl itself.
 
 =cut
 
+sub get       { __abstract('get')       }
+sub get_multi { __abstract('get_multi') }
+sub insert    { __abstract('insert')    }
+sub replace   { __abstract('replace')   }
+sub delete    { __abstract('delete')    }
+sub update    { __abstract('updatae')   }
+
+__abstract( die "You need to override " . shift() );
+
 "Nobody reads that, really";
