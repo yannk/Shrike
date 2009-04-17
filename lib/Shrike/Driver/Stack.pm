@@ -3,6 +3,7 @@ use strict;
 use warnings;
 
 use Object::Tiny qw{sub_drivers};
+use base qw/Shrike::Driver/;
 
 sub get {
     my $driver = shift;
@@ -46,6 +47,32 @@ sub get_multi {
     return \@results;
 }
 
-sub insert {}
+sub insert {
+    my $driver = shift;
+    for my $d (@{ $driver->sub_drivers }) {
+        $d->insert(@_);
+    }
+}
+
+sub replace {
+    my $driver = shift;
+    for my $d (@{ $driver->sub_drivers }) {
+        $d->delete(@_);
+    }
+}
+
+sub update {
+    my $driver = shift;
+    for my $d (@{ $driver->sub_drivers }) {
+        $d->update(@_);
+    }
+}
+
+sub delete {
+    my $driver = shift;
+    for my $d (@{ $driver->sub_drivers }) {
+        $d->delete(@_);
+    }
+}
 
 1;
