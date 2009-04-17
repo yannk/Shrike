@@ -16,7 +16,8 @@ sub get {
     my $driver = shift;
     my ($session, $model_class, $pk);
     my $cachekey = Shrike::Util::pk2cachekey($model_class, $pk);
-    return $driver->cache->{$cachekey};
+    my $data = $driver->cache->{$cachekey};
+    return $driver->inflate->($data);
 }
 
 sub get_multi {
@@ -25,7 +26,7 @@ sub get_multi {
 
     my @cachekeys = map { Shrike::Util::pk2cachekey($model_class, $_) } @$pks;
     my $cache = $driver->cache;
-    return [ @$cache{@cachekeys} ];
+    return [ map { $driver->inflate->($_) } @$cache{@cachekeys} ];
 }
 
 ## XXX should I make this behave like DBI (dies if cache already exists?)
