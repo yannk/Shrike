@@ -13,11 +13,13 @@ sub get {
     return;
 }
 
+## for each driver in order, we get what the previous driver
+## left us to do
 sub get_multi {
     my $driver = shift;
     my ($session, $model_class, $pks) = @_;
 
-    my @results = (undef) x scalar @$pks; #init results
+    my @results = (undef) x scalar @$pks; # init results
     my @i_map   = \(@$pks);
     my @o_map   = \(@results);
 
