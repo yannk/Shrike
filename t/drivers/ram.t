@@ -6,23 +6,26 @@ use Find::Lib libs => ['../lib', '../simple' ];
 use testcommon;
 use User;
 
-use Shrike::Session;
-use Shrike::Mapper;
-use Shrike::Util;
-
 use_ok 'Shrike::Driver::RAM';
 
-my $mapper  = Shrike::Mapper->new;
-my $session = Shrike::Session->new;
-
-my $inflate = Shrike::Util::std_inflate;
-my $deflate = Shrike::Util::std_deflate;
-
+my $class;
+my $h;
 my $driver  = Shrike::Driver::RAM->new(
-    inflate => $inflate,
-    deflate => $deflate,
     cache   => {}, # hmm. I also need to make it work with Cache::Cache
                    # I want LRU etc...
 );
 
-$mapper->map(User => $driver);
+isa_ok $driver, 'Shrike::Driver::RAM';
+$class = "something";
+$h = $driver->get($class, [2]);
+is_deeply $h, undef, "nothing exist in the cache";
+
+$h = { somekind => "of", object => 1 };
+ok $driver->insert($class, $h, [1]), "successful insert";
+is_deeply $driver->get($class, [1]), $h, 'Got h back';
+
+## change the original object
+$h->{somekind} = "tata";
+isnt $driver->get($class, [1])->{somekind}, $h->{somekind},
+     'but cache has a _copy_ of it';
+

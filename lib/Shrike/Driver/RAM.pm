@@ -14,15 +14,14 @@ use Shrike::Util;
 
 sub get {
     my $driver = shift;
-    my ($session, $model_class, $pk);
+    my ($model_class, $pk) = @_;
     my $cachekey = Shrike::Util::pk2cachekey($model_class, $pk);
-    my $data = $driver->cache->{$cachekey};
-    return $driver->inflate->($data);
+    return $driver->cache->{$cachekey};
 }
 
 sub get_multi {
     my $driver = shift;
-    my ($session, $model_class, $pks) = @_;
+    my ($model_class, $pks) = @_;
 
     my @cachekeys = map { Shrike::Util::pk2cachekey($model_class, $_) } @$pks;
     my $cache = $driver->cache;
@@ -32,11 +31,9 @@ sub get_multi {
 ## XXX should I make this behave like DBI (dies if cache already exists?)
 sub insert {
     my $driver = shift;
-    my ($session, $model) = shift;
-    my $data = $driver->deflate->($model);
-    my $model_class = ref $model;
-    my $cachekey = Shrike::Util::pk2cachekey($model_class, $model->pk);
-    $driver->cache->{$cachekey} = $data;
+    my ($model_class, $data, $pk) = @_;
+    my $cachekey = Shrike::Util::pk2cachekey($model_class, $pk);
+    $driver->cache->{$cachekey} = { %$data };
     return 1;
 }
 
@@ -47,11 +44,9 @@ sub update { shift->insert(@_) }
 
 sub delete {
     my $driver = shift;
-    my ($session, $model) = shift;
-    my $model_class = ref $model;
-    my $cachekey = Shrike::Util::pk2cachekey($model_class, $model->pk);
-    delete $driver->cache->{$cachekey};
-    return 1;
+    my ($model_class, $pk) = shift;
+    my $cachekey = Shrike::Util::pk2cachekey($model_class, $pk);
+    return ! !delete $driver->cache->{$cachekey};
 }
 
 1;
