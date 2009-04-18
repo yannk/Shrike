@@ -1,7 +1,6 @@
 package Shrike;
-
-use warnings;
-use strict;
+use Moose;
+use MooseX::Singleton;
 
 =head1 NAME
 
@@ -14,6 +13,8 @@ Version 0.01
 =cut
 
 our $VERSION = '0.01';
+
+has maps => (is => 'rw', isa => 'HashRef[Item]');
 
 
 =head1 SYNOPSIS
@@ -143,4 +144,5 @@ under the same terms as Perl itself.
 
 =cut
 
+no Moose;
 "http://en.wikipedia.org/wiki/The_Shrike";
