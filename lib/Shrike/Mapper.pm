@@ -1,6 +1,9 @@
 package Shrike::Mapper;
 use Moose;
 
+has driver      => ( is => 'ro', isa => 'Shrike::Driver'     );
+has transformer => ( is => 'ro', isa => 'Shrike::Transformer');
+
 =head1 NAME
 
 Shrike::Mapper - Maps classes to drivers.

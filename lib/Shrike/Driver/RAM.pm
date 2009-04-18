@@ -2,7 +2,7 @@ package Shrike::Driver::RAM;
 use strict;
 use warnings;
 
-use Object::Tiny qw{cache inflate deflate};
+use Object::Tiny qw{cache};
 use base qw/Shrike::Driver/;
 use Shrike::Util;
 

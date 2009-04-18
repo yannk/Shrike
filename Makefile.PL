@@ -8,6 +8,7 @@ license  'perl';
 build_requires 'Test::More';
 requires       'Moose';
 requires       'Sub::Install';
+test_requires  'Find::Lib';
 
 auto_install;
 
