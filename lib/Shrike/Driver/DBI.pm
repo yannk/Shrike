@@ -151,4 +151,20 @@ sub update {
     return 1;
 }
 
+sub delete {
+    my $driver = shift;
+    my ($model_class, $pk) = @_;
+
+    my $dbh      = $driver->dbh;
+    my $table    = $driver->table;
+    my $pk_where = join ' AND ', map { "$_ = ?" } @{ $driver->primary_key };
+
+    my $stmt = "DELETE FROM $table WHERE $pk_where";
+    my $sth = $dbh->prepare( $stmt );
+    warn Dump { $stmt => $pk };
+    $sth->execute(@$pk);
+    $sth->finish;
+    return 1;
+}
+
 1;

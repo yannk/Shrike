@@ -79,3 +79,9 @@ is_deeply $driver->get("not relevant", [1]), undef, "got undef for inexistent";
               ['Yann', 'Caroline', 'Maelys', undef, undef],
               "Got get multi results";
 }
+
+## delete
+{
+    ok $driver->delete("not relevant", [1]);
+    is $driver->get("not relevant", [1]), undef;
+}
