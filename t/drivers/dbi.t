@@ -25,11 +25,11 @@ my $h;
 my $dsn = testcommon::init_db('user');
 
 my $driver  = Shrike::Driver::DBI->new(
-    table   => 'user',
-    columns => [qw/ user_id first_name last_name /],
-    pk      => ['user_id'],
+    table       => 'user',
+    columns     => [qw/ user_id first_name last_name /],
+    primary_key => ['user_id'],
     ## not quite sure about the way to get dbh, just yet
-    dsn     => $dsn,
+    dsn         => $dsn,
 );
 
 ## there is no data in the table, so anything will return undef
@@ -55,4 +55,27 @@ is_deeply $driver->get("not relevant", [1]), undef, "got undef for inexistent";
     };
     ok $driver->update("not relevant", $h, [1]), "updated";
     is_deeply $driver->get("not relevant", [1]), $h, "got object back";
+}
+
+## get multi
+{
+    $h = {
+        first_name => 'Caroline',
+        last_name  => 'Kerherve',
+        user_id    => 2,
+    };
+    ok $driver->insert("not relevant", $h, [2]), "inserted";
+
+    $h = {
+        first_name => 'Maelys',
+        last_name  => 'Kerherve',
+        user_id    => 3,
+    };
+    ok $driver->insert("not relevant", $h, [3]), "inserted";
+
+    my $res = $driver->get_multi("not relevant", [[1], [2], [3], [9], undef]);
+    isa_ok $res, 'ARRAY';
+    is_deeply [ map { $_ ? $_->{first_name} : undef } @$res ],
+              ['Yann', 'Caroline', 'Maelys', undef, undef],
+              "Got get multi results";
 }

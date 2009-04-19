@@ -15,4 +15,8 @@ sub pk2cachekey {
     croak "Can't make a cache key out of '$model_class' and '$pk'";
 }
 
+sub fast_pk2cachekey {
+    return join ":", shift, @{ shift };
+}
+
 1;
