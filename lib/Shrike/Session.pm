@@ -1,6 +1,8 @@
 package Shrike::Session;
 use Moose;
 
+has mapper      => (is => 'rw', isa => 'Item', required => 1);
+
 =head1 NAME
 
 Shrike::Session - Responsible for maintaining the state of the dialog between
@@ -10,7 +12,7 @@ objects and stores.
 
     use Shrike::Session;
 
-    $session = Shrike::Session->new();
+    $session = Shrike::Session->new(mapper => $mapper);
     $session->add(@objects);
     $session->delete($object);
 
