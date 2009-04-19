@@ -7,7 +7,6 @@ use YAML;
 has table   => ( is => 'ro', isa => 'Str'                                  );
 has columns => ( is => 'ro', isa => 'ArrayRef[Str]', default => sub { [] } );
 has dsn     => ( is => 'ro', isa => 'HashRef[Item]'                        );
-has get_pk  => ( is => 'ro', isa => 'CodeRef'                              );
 
 has primary_key => (
     is => 'ro',
