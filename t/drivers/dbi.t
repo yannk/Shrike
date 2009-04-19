@@ -45,3 +45,14 @@ is_deeply $driver->get("not relevant", [1]), undef, "got undef for inexistent";
     ok $driver->insert("not relevant", $h, [1]), "inserted";
     is_deeply $driver->get("not relevant", [1]), $h, "got object back";
 }
+
+## udpate the data in the database
+{
+    $h = {
+        first_name => 'Yann',
+        last_name  => 'KERHERVE',
+        user_id    => 1,
+    };
+    ok $driver->update("not relevant", $h, [1]), "updated";
+    is_deeply $driver->get("not relevant", [1]), $h, "got object back";
+}

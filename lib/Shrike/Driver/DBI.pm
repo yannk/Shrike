@@ -81,7 +81,7 @@ sub get_multi {
 
 sub update {
     my $driver = shift;
-    my ($data, $pk) = @_;
+    my ($model_class, $data, $pk) = @_;
 
     my $dbh      = $driver->dbh;
     my $table    = $driver->table;
