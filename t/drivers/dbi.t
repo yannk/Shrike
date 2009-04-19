@@ -31,3 +31,17 @@ my $driver  = Shrike::Driver::DBI->new(
     ## not quite sure about the way to get dbh, just yet
     dsn     => $dsn,
 );
+
+## there is no data in the table, so anything will return undef
+is_deeply $driver->get("not relevant", [1]), undef, "got undef for inexistent";
+
+## add some data and retrieve it
+{
+    $h = {
+        first_name => 'Yann',
+        last_name  => 'Kerherve',
+        user_id    => 1,
+    };
+    ok $driver->insert("not relevant", $h, [1]), "inserted";
+    is_deeply $driver->get("not relevant", [1]), $h, "got object back";
+}

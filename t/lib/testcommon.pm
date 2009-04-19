@@ -30,7 +30,7 @@ sub init_db {
     my $dsn = get_dsn();
     my $dbh = DBI->connect(
         $dsn->{data_source}, $dsn->{user}, $dsn->{password},
-#        { RaiseError => 1, PrintError => 0 },
+        { RaiseError => 1, PrintError => 0 },
     );
 
     my $file = File::Spec->catfile($base, 'sql', $table . '.sql');
@@ -38,7 +38,10 @@ sub init_db {
     my $sql = do { local $/; <$fh> };
     close $fh;
 
-    $dbh->do( $sql );
+    for my $stmt ( split /;+/, $sql) {
+        next unless $stmt =~ /\S/;
+        $dbh->do( $stmt ) or die $dbh->errstr;
+    }
 
     $dbh->disconnect;
     return $dsn;
