@@ -40,7 +40,7 @@ dies_ok { $s->add($u)} "User is not mapped yet";
 ok $m->map(User => $dbi), "User is now mapped";
 ok $s->add($u), "User added to the session";
 
-$s->sync;
+ok $s->sync, "writing users to the database";
 
 my @user_ids;
 my $dbh = $dbi->dbh;

@@ -1,8 +1,7 @@
 package Shrike::Mapper;
 use Moose;
 
-has driver      => ( is => 'ro', isa => 'Shrike::Driver'     );
-has transformer => ( is => 'ro', isa => 'Shrike::Transformer');
+has maps => ( is => 'rw', isa => 'HashRef[Shrike::Map]' );
 
 =head1 NAME
 
@@ -15,9 +14,23 @@ Mapper defines how classes are mapped to drivers.
     use Shrike::Mapper;
 
     $mapper = Shrike::Mapper->new;
-    $mapper->map( $class => $driver );
+    $mapper->map( $class => $driver, $inflator, $deflator);
 
 =head1 DESCRIPTION
+
+
+=head1 METHODS
+
+=head2 map($class, $driver, $inflator, $deflator) 
+
+Create a map that binds a C<$class> to its C<$driver> and methods
+of transformation: C<$inflator> and C<$deflator>
+
+=cut 
+
+sub map {
+
+}
 
 =head1 AUTHOR
 
@@ -32,5 +45,7 @@ under the same terms as Perl itself.
 
 
 =cut
+
+
 
 "The Hegemony Consul sat on the balcony of his ebony spaceship...";
