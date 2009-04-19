@@ -3,9 +3,7 @@ use warnings;
 
 use Test::More 'no_plan';
 use Test::Exception;
-use Find::Lib libs => ['../lib', '../simple'];
-use testcommon;
-use User;
+use Find::Lib libs => ['../lib',];
 
 use_ok 'Shrike::Driver::RAM';
 
