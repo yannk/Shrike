@@ -16,7 +16,7 @@ sub pk2cachekey {
 }
 
 sub fast_pk2cachekey {
-    return join ":", shift, @{ shift };
+    return join ":", shift, @{ shift() };
 }
 
 1;
