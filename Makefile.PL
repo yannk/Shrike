@@ -7,8 +7,11 @@ license  'perl';
 
 build_requires 'Test::More';
 requires       'Moose';
+requires       'MooseX::Singleton';
 requires       'Sub::Install';
+
 test_requires  'Find::Lib';
+test_requires  'Test::Exception';
 
 auto_install;
 
