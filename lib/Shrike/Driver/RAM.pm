@@ -5,6 +5,7 @@ use warnings;
 use Object::Tiny qw{cache};
 use base qw/Shrike::Driver/;
 use Shrike::Util;
+use Carp;
 
 ## tired thoughts:
 # * all cache should have the same base behaviour (stringify, *flate, do)
@@ -22,10 +23,22 @@ sub get {
 sub get_multi {
     my $driver = shift;
     my ($model_class, $pks) = @_;
+    croak "no PK list passed in argument to get_multi $pks"
+        unless $pks && ref $pks eq 'ARRAY';
 
-    my @cachekeys = map { Shrike::Util::pk2cachekey($model_class, $_) } @$pks;
+    my @cachekeys = map {
+        $_ ? Shrike::Util::pk2cachekey($model_class, $_)
+           : undef
+    } @$pks;
     my $cache = $driver->cache;
-    return [ map { $driver->inflate->($_) } @$cache{@cachekeys} ];
+
+    ## can't use a hash slice because of dupes 
+    #return [ @$cache{@cachekeys} ];
+    my @results;
+    for (@cachekeys) {
+        push @results, defined $_ ? $cache->{$_} : undef;
+    }
+    return \@results;
 }
 
 ## XXX should I make this behave like DBI (dies if cache already exists?)

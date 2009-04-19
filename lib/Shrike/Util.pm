@@ -9,7 +9,7 @@ sub pk2cachekey {
     my $ref = ref $pk;
     if ($ref) {
         if ($ref eq 'ARRAY') {
-            return join "-", $model_class, @$pk;
+            return join ":", $model_class, @$pk;
         }
     }
     croak "Can't make a cache key out of '$model_class' and '$pk'";
