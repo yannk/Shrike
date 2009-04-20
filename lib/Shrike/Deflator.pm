@@ -3,6 +3,11 @@ package Shrike::Deflator;
 use warnings;
 use strict;
 
+sub new {
+    my $class = shift;
+    return bless { }, $class;
+}
+
 =head1 NAME
 
 Shrike::Deflator - Base class for turning objects to flat hash suitable

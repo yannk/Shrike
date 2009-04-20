@@ -1,7 +1,8 @@
 package Shrike::Driver::DBI;
 
-use Moose;
+use Carp;
 use DBI;
+use Moose;
 use YAML;
 
 has table   => ( is => 'ro', isa => 'Str'                                  );
@@ -79,7 +80,11 @@ sub get {
 ## case of get_multi
 sub get_multi {
     my $driver = shift;
-    my ($model_class, $pks) = @_;
+    my ($session, $model_class, $pks) = @_;
+
+    return [] unless $pks;
+    croak "get_multi should get a list of pk" unless ref $pks eq 'ARRAY';
+    croak "pks should be arrayref" unless ref $pks->[0] eq 'ARRAY';
 
     my $dbh      = $driver->dbh;
     my $table    = $driver->table;
@@ -89,6 +94,8 @@ sub get_multi {
     # mysql
     #my $stmt = "SELECT $columns FROM $table WHERE $pk IN ($IN)";
     my @defined_pks = grep { defined } @$pks;
+    return [ @$pks ] unless scalar @defined_pks;
+
     my $pk_where    = '(' . ( join ' AND ', map { "$_ = ?" } @pk_col ) . ")";
     my $pk_wheres   = join ' OR ', ($pk_where) x scalar @defined_pks;
     my $stmt        = "SELECT $columns FROM $table WHERE $pk_wheres";

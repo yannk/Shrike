@@ -9,6 +9,7 @@ build_requires 'Test::More';
 requires       'Moose';
 requires       'MooseX::Singleton';
 requires       'Sub::Install';
+requires       'MooseX::AttributeHelpers';
 
 test_requires  'Find::Lib';
 test_requires  'Test::Exception';

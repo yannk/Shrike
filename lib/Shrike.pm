@@ -45,7 +45,7 @@ couple your objects with their datastore(s).
     $session->sync;
     $pk = $user->pk;
 
-    $user = $session->lookup($pk);
+    $user = $session->get(User => $pk);
     is $user->first_name, "Yann";
 
 =head1 DESCRIPTION

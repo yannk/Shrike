@@ -10,6 +10,8 @@ use Test::Exception;
 use DBI;
 use Shrike::Mapper;
 use Shrike::Session;
+use Shrike::Inflator;
+use Shrike::Deflator::ObjectMethod;
 use Shrike::Driver::DBI;
 use User;
 
@@ -30,14 +32,17 @@ my $u = User->new(
     last_name  => 'Kerherve',
 );
 
+my $inflator = Shrike::Inflator->new;
+my $deflator = Shrike::Deflator::ObjectMethod->new;
+
 my $m = Shrike::Mapper->new;
 my $s = Shrike::Session->new( mapper => $m );
 
-dies_ok { $u->pk     } "no pk()     installed yet";
-dies_ok { $u->pk_str } "no pk_str() installed yet";
-dies_ok { $s->add($u)} "User is not mapped yet";
+dies_ok { $u->pk      } "no pk()     installed yet";
+dies_ok { $u->pk_str  } "no pk_str() installed yet";
+dies_ok { $s->add($u) } "User is not mapped yet";
 
-ok $m->map(User => $dbi), "User is now mapped";
+ok $m->map(User => $dbi, $inflator, $deflator), "User is now mapped";
 ok $s->add($u), "User added to the session";
 
 ok $s->sync, "writing users to the database";
@@ -45,10 +50,11 @@ ok $s->sync, "writing users to the database";
 my @user_ids;
 my $dbh = $dbi->dbh;
 my $sth = $dbh->prepare('SELECT user_id FROM user');
+$sth->execute;
 while (my $row = $sth->fetch) {
-    push @user_ids, $row->[0];
+    push @user_ids, [ $row->[0] ];
 }
 
-my $users = $dbi->get_multi(\@user_ids);
+my $users = $s->get_multi(User => \@user_ids);
 is scalar @$users, 1;
 is $users->[0]->first_name, 'Yann';

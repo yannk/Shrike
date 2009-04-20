@@ -73,6 +73,11 @@ is_deeply $driver->get("not relevant", [1]), undef, "got undef for inexistent";
     };
     ok $driver->insert("not relevant", $h, [3]), "inserted";
 
+    ## edge cases
+    is_deeply $driver->get_multi("not relevant", []), [], "empty array";
+    is_deeply $driver->get_multi("not relevant", undef), [], "undef";
+    is_deeply $driver->get_multi("not relevant", [undef]), [undef], "only undef";
+
     my $res = $driver->get_multi("not relevant", [[1], [2], [3], [9], undef]);
     isa_ok $res, 'ARRAY';
     is_deeply [ map { $_ ? $_->{first_name} : undef } @$res ],

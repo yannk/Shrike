@@ -1,7 +1,23 @@
 package Shrike::Mapper;
+use Carp;
 use Moose;
+use MooseX::AttributeHelpers;
+use Shrike::Map;
+use Sub::Install;
 
-has maps => ( is => 'rw', isa => 'HashRef[Shrike::Map]' );
+has maps => ( 
+    metaclass => 'Collection::Hash',
+    is => 'rw',
+    isa => 'HashRef[Shrike::Map]',
+    default => sub { {} },
+    provides => {
+        exists    => 'has_map_for',
+        #keys      => 'all_maps',
+        get       => 'map_for',
+        set       => 'set_map_for',
+        delete    => 'remove_map_for',
+    }
+);
 
 =head1 NAME
 
@@ -29,7 +45,78 @@ of transformation: C<$inflator> and C<$deflator>
 =cut 
 
 sub map {
+    my $mapper = shift;
+    my ($model_class, $driver, $inflator, $deflator) = @_;
 
+    croak "There is already a map for $model_class"
+        if $mapper->has_map_for($model_class);
+
+    my $meta = $model_class->can('meta')
+        or croak "There is no meta for $model_class";
+
+    my $meta_class = $meta->($model_class);
+    my %attributes = %{ $meta_class->get_attribute_map };
+    for (keys %attributes) {
+        $meta_class->add_after_method_modifier(
+            $_ => $mapper->after_has_changed($_)
+        );
+    }
+    $mapper->export_methods($model_class, $driver);
+    my $map = Shrike::Map->new(
+        class    => $model_class,
+        driver   => $driver,
+        inflator => $inflator,
+        deflator => $deflator,
+        mapper   => $mapper,  # used?
+    );
+    $mapper->set_map_for($model_class => $map);
+    return $map;
+}
+
+sub after_has_changed {
+    my $mapper = shift;
+    my $attr = shift;
+    return sub {
+        my $instance = shift;
+        return unless @_;
+        my $value = shift;
+        warn "Changing $instance $attr to '$value'";
+        ## need to clean up after the end of the session
+        my $session = $instance->{__shrike_session};
+        if ($session) {
+            $session->mark_as_dirty($instance, $attr);
+        }
+        else {
+            warn "Object is probably not mapped yet";
+        }
+        return;
+    }
+}
+
+sub export_methods {
+    my $class = shift;
+    my ($model_class, $driver) = @_;
+
+    my $pk = sub {
+        my $model = shift;
+        if (@_) {
+            $model->{__pk} = shift;
+        }
+        return $model->{__pk} || [];
+
+    };
+    Sub::Install::install_sub({
+        code => $pk,
+        into => $model_class,
+        as   => 'pk',
+    });
+    Sub::Install::install_sub({
+        code => sub {
+            return join ":", @{ shift->pk || [] };
+        },
+        into => $model_class,
+        as   => 'pk_str',
+    });
 }
 
 =head1 AUTHOR

@@ -1,4 +1,4 @@
-package Shrike::Deflator::InObject;
+package Shrike::Deflator::ObjectMethod;
 use warnings;
 use strict;
 

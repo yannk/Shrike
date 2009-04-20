@@ -3,6 +3,11 @@ package Shrike::Inflator;
 use warnings;
 use strict;
 
+sub new {
+    my $class = shift;
+    return bless { }, $class;
+}
+
 =head1 NAME
 
 Shrike::Inflator - Base class for turning flat hash to objects
