@@ -7,6 +7,7 @@ use base qw/Shrike::Driver/;
 
 sub get {
     my $driver = shift;
+
     for (@{ $driver->sub_drivers }) {
         my $object = $_->get(@_);
         return $object if $object;
@@ -18,7 +19,7 @@ sub get {
 ## left us to do
 sub get_multi {
     my $driver = shift;
-    my ($session, $model_class, $pks) = @_;
+    my ($model_class, $pks) = @_;
 
     my @results = (undef) x scalar @$pks; # init results
     my @i_map   = \(@$pks);
@@ -27,7 +28,7 @@ sub get_multi {
     my @prev_map = ();
     my @map = ();
     for my $d (@{ $driver->sub_drivers }) {
-        my $got = $d->get_multi($session, $model_class, [ map $$_, @i_map ]);
+        my $got = $d->get_multi($model_class, [ map $$_, @i_map ]);
         my @new_i_map;
         my @new_o_map;
         for (my $i = 0; $i < scalar @$got; $i++) {
@@ -49,30 +50,38 @@ sub get_multi {
 
 sub insert {
     my $driver = shift;
+    my $res = 1;
     for my $d (@{ $driver->sub_drivers }) {
-        $d->insert(@_);
+        $res &&= ! ! $d->insert(@_);
     }
+    return $res;
 }
 
 sub replace {
     my $driver = shift;
+    my $res = 1;
     for my $d (@{ $driver->sub_drivers }) {
-        $d->delete(@_);
+        $res &&= ! ! $d->replace(@_);
     }
+    return $res;
 }
 
 sub update {
     my $driver = shift;
+    my $res = 1;
     for my $d (@{ $driver->sub_drivers }) {
-        $d->update(@_);
+        $res &&= ! ! $d->update(@_);
     }
+    return $res;
 }
 
 sub delete {
     my $driver = shift;
+    my $res = 1;
     for my $d (@{ $driver->sub_drivers }) {
-        $d->delete(@_);
+        $res &&= ! ! $d->delete(@_);
     }
+    return $res;
 }
 
 1;
