@@ -8,23 +8,38 @@ use testcommon;
 
 use Test::Exception;
 use DBI;
+use Cache::Memcached;
 use Shrike::Mapper;
 use Shrike::Session;
 use Shrike::Inflator;
 use Shrike::Deflator::ObjectMethod;
 use Shrike::Driver::DBI;
+use Shrike::Driver::RAM;
+use Shrike::Driver::Memcached;
+use Shrike::Driver::Stack;
 use User;
 
 plan 'no_plan';
 
 my $dsn = testcommon::init_db('user');
 
+my $ram = Shrike::Driver::RAM->new;
+my $mc  = Shrike::Driver::Memcached->new(
+    cache => Cache::Memcached->new(
+        namespace => 'bla',
+        servers   => [ '127.0.0.1:11211' ],
+    ),
+);
 my $dbi = Shrike::Driver::DBI->new(
     table       => 'user',
     columns     => [ qw/ user_id first_name last_name / ],
     primary_key => ['user_id'],
     dsn         => $dsn,
 ); 
+
+my $stack = Shrike::Driver::Stack->new(
+    sub_drivers => [ $ram, $mc, $dbi ],
+);
 
 my $u = User->new(
     user_id    => 1,
