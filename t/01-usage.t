@@ -58,7 +58,7 @@ dies_ok { $u->pk_str  } "no pk_str() installed yet";
 dies_ok { $s->add($u) } "User is not mapped yet";
 
 ok $m->map(User => $dbi, $inflator, $deflator), "User is now mapped";
-ok $s->add($u), "User added to the session";
+lives_ok { $s->add($u) } "User added to the session";
 
 ok $s->sync, "writing users to the database";
 
