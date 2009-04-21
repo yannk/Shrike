@@ -25,8 +25,6 @@ sub get_multi {
     my @i_map   = \(@$pks);
     my @o_map   = \(@results);
 
-    my @prev_map = ();
-    my @map = ();
     for my $d (@{ $driver->sub_drivers }) {
         my $got = $d->get_multi($session, $model_class, [ map $$_, @i_map ]);
         my @new_i_map;

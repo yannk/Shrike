@@ -53,6 +53,7 @@ sub insert {
 sub replace { shift->insert(@_) }
 
 ## XXX revisit
+## wrong: not the same arguments
 sub update { shift->insert(@_) }
 
 sub delete {
