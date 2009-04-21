@@ -19,7 +19,7 @@ sub get {
 ## left us to do
 sub get_multi {
     my $driver = shift;
-    my ($model_class, $pks) = @_;
+    my ($session, $model_class, $pks) = @_;
 
     my @results = (undef) x scalar @$pks; # init results
     my @i_map   = \(@$pks);
@@ -28,7 +28,7 @@ sub get_multi {
     my @prev_map = ();
     my @map = ();
     for my $d (@{ $driver->sub_drivers }) {
-        my $got = $d->get_multi($model_class, [ map $$_, @i_map ]);
+        my $got = $d->get_multi($session, $model_class, [ map $$_, @i_map ]);
         my @new_i_map;
         my @new_o_map;
         for (my $i = 0; $i < scalar @$got; $i++) {

@@ -12,16 +12,21 @@ BEGIN {
     }
 }
 
-plan 'no_plan';
 use Test::Exception;
 use Find::Lib libs => ['../lib', '../simple'];
+plan 'no_plan';
 
 ## SQLite requirement
 use testcommon;
+use Shrike::Session;
+use Shrike::Mapper;
+
 use_ok 'Shrike::Driver::DBI';
 
 my $class;
 my $h;
+my $m = Shrike::Mapper->new;
+my $s = Shrike::Session->new( mapper => $m ) ;
 my $dsn = testcommon::init_db('user');
 
 my $driver  = Shrike::Driver::DBI->new(
@@ -33,7 +38,7 @@ my $driver  = Shrike::Driver::DBI->new(
 );
 
 ## there is no data in the table, so anything will return undef
-is_deeply $driver->get("not relevant", [1]), undef, "got undef for inexistent";
+is_deeply $driver->get($s, "not relevant", [1]), undef, "got undef for inexistent";
 
 ## add some data and retrieve it
 {
@@ -42,8 +47,8 @@ is_deeply $driver->get("not relevant", [1]), undef, "got undef for inexistent";
         last_name  => 'Kerherve',
         user_id    => 1,
     };
-    ok $driver->insert("not relevant", $h, [1]), "inserted";
-    is_deeply $driver->get("not relevant", [1]), $h, "got object back";
+    ok $driver->insert($s, "not relevant", $h, [1]), "inserted";
+    is_deeply $driver->get($s, "not relevant", [1]), $h, "got object back";
 }
 
 ## udpate the data in the database
@@ -53,8 +58,8 @@ is_deeply $driver->get("not relevant", [1]), undef, "got undef for inexistent";
         last_name  => 'KERHERVE',
         user_id    => 1,
     };
-    ok $driver->update("not relevant", $h, [1]), "updated";
-    is_deeply $driver->get("not relevant", [1]), $h, "got object back";
+    ok $driver->update($s, "not relevant", $h, [1]), "updated";
+    is_deeply $driver->get($s, "not relevant", [1]), $h, "got object back";
 }
 
 ## get multi
@@ -64,21 +69,21 @@ is_deeply $driver->get("not relevant", [1]), undef, "got undef for inexistent";
         last_name  => 'Kerherve',
         user_id    => 2,
     };
-    ok $driver->insert("not relevant", $h, [2]), "inserted";
+    ok $driver->insert($s, "not relevant", $h, [2]), "inserted";
 
     $h = {
         first_name => 'Maelys',
         last_name  => 'Kerherve',
         user_id    => 3,
     };
-    ok $driver->insert("not relevant", $h, [3]), "inserted";
+    ok $driver->insert($s, "not relevant", $h, [3]), "inserted";
 
     ## edge cases
-    is_deeply $driver->get_multi("not relevant", []), [], "empty array";
-    is_deeply $driver->get_multi("not relevant", undef), [], "undef";
-    is_deeply $driver->get_multi("not relevant", [undef]), [undef], "only undef";
+    is_deeply $driver->get_multi($s, "not relevant", []), [], "empty array";
+    is_deeply $driver->get_multi($s, "not relevant", undef), [], "undef";
+    is_deeply $driver->get_multi($s, "not relevant", [undef]), [undef], "only undef";
 
-    my $res = $driver->get_multi("not relevant", [[1], [2], [3], [9], undef]);
+    my $res = $driver->get_multi($s, "not relevant", [[1], [2], [3], [9], undef]);
     isa_ok $res, 'ARRAY';
     is_deeply [ map { $_ ? $_->{first_name} : undef } @$res ],
               ['Yann', 'Caroline', 'Maelys', undef, undef],
@@ -87,6 +92,6 @@ is_deeply $driver->get("not relevant", [1]), undef, "got undef for inexistent";
 
 ## delete
 {
-    ok $driver->delete("not relevant", [1]);
-    is $driver->get("not relevant", [1]), undef;
+    ok $driver->delete($s, "not relevant", [1]);
+    is $driver->get($s, "not relevant", [1]), undef;
 }

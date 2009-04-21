@@ -27,7 +27,7 @@ has dbh     => (
 sub insert {
     my $driver = shift;
     ## XXX verify these args
-    my ($model, $data, $pk) = @_;
+    my ($session, $model, $data, $pk) = @_;
 
     ## by lack of PK management yet
 #    $model->user_id( int rand 100000 );
@@ -52,7 +52,7 @@ sub insert {
 
 sub get {
     my $driver = shift;
-    my ($model_class, $pk) = @_;
+    my ($session, $model_class, $pk) = @_;
 
     my @bind;
     my %fetch;
@@ -80,7 +80,7 @@ sub get {
 ## case of get_multi
 sub get_multi {
     my $driver = shift;
-    my ($model_class, $pks) = @_;
+    my ($session, $model_class, $pks) = @_;
     return [] unless $pks;
     croak "get_multi should get a list of pk" unless ref $pks eq 'ARRAY';
     return [] unless @$pks;
@@ -138,7 +138,7 @@ sub get_multi {
 
 sub update {
     my $driver = shift;
-    my ($model_class, $data, $pk) = @_;
+    my ($session, $model_class, $data, $pk) = @_;
 
     my $dbh      = $driver->dbh;
     my $table    = $driver->table;
@@ -160,7 +160,7 @@ sub update {
 
 sub delete {
     my $driver = shift;
-    my ($model_class, $pk) = @_;
+    my ($session, $model_class, $pk) = @_;
 
     my $dbh      = $driver->dbh;
     my $table    = $driver->table;

@@ -46,7 +46,7 @@ sub insert {
         or croak "Cannot deflate $model";
     my $model_class = ref $model; 
     my $pk = $model->pk;
-    return $map->driver->insert($model_class, $data, $pk); 
+    return $map->driver->insert($session, $model_class, $data, $pk, @args); 
 }
 
 sub replace {
@@ -56,7 +56,7 @@ sub replace {
         or croak "Cannot deflate $model";
     my $model_class = ref $model; 
     my $pk = $model->pk;
-    return $map->driver->replace($model_class, $data, $pk); 
+    return $map->driver->replace($session, $model_class, $data, $pk, @args); 
 }
 
 ## XXX dilemna on update,
@@ -73,7 +73,7 @@ sub update {
         or croak "Cannot deflate $model";
     my $model_class = ref $model; 
     my $pk = $model->pk;
-    return $map->driver->update($model_class, $data, $pk); 
+    return $map->driver->update($session, $model_class, $data, $pk, @args); 
 }
 
 sub delete {
@@ -81,7 +81,7 @@ sub delete {
     my ($session, $model, @args) = @_;
     my $model_class = ref $model; 
     my $pk = $model->pk;
-    return $map->driver->delete($model_class, $pk); 
+    return $map->driver->delete($session, $model_class, $pk, @args); 
 }
 
 no Moose;

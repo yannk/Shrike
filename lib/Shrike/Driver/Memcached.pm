@@ -9,14 +9,14 @@ use Carp;
 
 sub get {
     my $driver = shift;
-    my ($model_class, $pk) = @_;
+    my ($session, $model_class, $pk) = @_;
     my $cachekey = Shrike::Util::pk2cachekey($model_class, $pk);
     return $driver->cache->get($cachekey);
 }
 
 sub get_multi {
     my $driver = shift;
-    my ($model_class, $pks) = @_;
+    my ($session, $model_class, $pks) = @_;
     croak "no PK list passed in argument to get_multi $pks"
         unless $pks && ref $pks eq 'ARRAY';
 
@@ -35,7 +35,7 @@ sub get_multi {
 
 sub insert {
     my $driver = shift;
-    my ($model_class, $data, $pk) = @_;
+    my ($session, $model_class, $data, $pk) = @_;
     my $cachekey = Shrike::Util::pk2cachekey($model_class, $pk);
     $driver->cache->set($cachekey => { %$data });
     return 1;
@@ -48,7 +48,7 @@ sub update { shift->insert(@_) }
 
 sub delete {
     my $driver = shift;
-    my ($model_class, $pk) = shift;
+    my ($session, $model_class, $pk) = shift;
     my $cachekey = Shrike::Util::pk2cachekey($model_class, $pk);
     return ! ! $driver->cache->delete($cachekey);
 }
