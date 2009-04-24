@@ -9,7 +9,8 @@ sub get {
     my $driver = shift;
 
     my $func = $driver->get_func;
-    my $i = $func->($driver, @_);
+    my $i = eval { $func->($driver, @_) };
+    return if $@;
     my $shard_driver = $driver->shards->[$i];
     return $shard_driver->get(@_);
 }
@@ -29,7 +30,8 @@ sub get_multi {
         my $pk = $pks->[$i];
         next unless $pk;
         ## that's a lot of function calls... room for later optimization
-        my $shard = $func->($driver, $session, $model_class, $pk);
+        my $shard = eval { $func->($driver, $session, $model_class, $pk) };
+        next if $@;
         push @{ $distribution{input}{$shard} }, $pk;
         push @{ $distribution{output}{$shard} }, \$results[$i];
     }
@@ -50,11 +52,12 @@ sub get_multi {
 sub insert {
     my $driver = shift;
     my $func = $driver->new_func;
+  #  warn $func->($driver, @_);
     my $d = $driver->shards->[ $func->($driver, @_) ];
     return $d->insert(@_);
 }
 
-sub replace { }
+sub replace { die "soon" }
 
 sub update {
     my $driver = shift;

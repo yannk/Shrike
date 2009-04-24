@@ -125,7 +125,8 @@ sub get {
 
     my $map = $session->mapper->map_for($model_class)
         or Carp::croak("No map to get from $model_class");
-    my $model = $map->get($session, $model_class, @args);
+    my $model = $map->get($session, $model_class, @args)
+        or return;
 
     ## now, we know about this object, let's make a note of it
     $session->in_store->{$model_class}->{$model->pk_str} = $model;

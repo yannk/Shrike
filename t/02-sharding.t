@@ -3,12 +3,15 @@ use warnings;
 
 use Test::More 'no_plan';
 use Test::Exception;
-use Find::Lib libs => ['../lib', ];
+use Find::Lib libs => ['../lib', './sharding'];
+use Carp;
 
 use_ok 'Shrike::Driver::Sharder';
 use Shrike::Driver::RAM;
-
-my $class = "class";
+use Shrike::Mapper;
+use Shrike::Session;
+use Shrike::Inflator;
+use Shrike::Deflator::ObjectMethod;
 
 ## 3 RAM stacks
 my %h = ( 1 => {}, 2 => {}, 3 => {} );
@@ -17,56 +20,62 @@ for (1..3) {
     push @d, Shrike::Driver::RAM->new( cache => $h{$_} );
 }
 
-## Sharder::Random->new( shards => 3 );
-my $stack = Shrike::Driver::Sharder->new(
-    sub_drivers => {
-        one   => $d[0],
-        two   => $d[1],
-        three => $d[2],
-    },
-    shard_func => sub {
+use_ok 'User';
+use_ok 'UserMap';
+
+## Driver::Sharder::Random->new( shards => 3 );
+my $sharder = Shrike::Driver::Sharder->new(
+    shards => \@d, 
+    get_func => sub {
         my $driver = shift;
-        my ($session, $hash) = @_;
-        my $sub    = $driver->sub_drivers;
-        if (! $hash) {
-            ## insert case
-            my $i = int rand scalar @$sub;
-            return $sub->[$i];
-        }
-        ## normal access case
-        my $user_id = $hash->{user_id};
-        my $usermap = $session->lookup(UserMap => [$user_id]);
-        my $i = $usermap->shard;
-        my $sub_driver = $sub->[$i]
-            or croak "I don't know about this shard $i";
-        return $sub_driver;
+        my ($session, $model_class, $pk) = @_;
+        my $user_id = $pk->[0];
+        my $usermap = $session->get(UserMap => [$user_id]);
+        confess "no map for $user_id" unless $usermap;
+        return $usermap->shard;
+    },
+    new_func => sub {
+        my $driver = shift;
+        my ($session, $model_class, $data, $pk) = @_;
+        my $subs = $driver->shards;
+        my $shard = int rand scalar @$subs + 1;
+        use Carp; Carp::confess('x');
+        my $map = UserMap->new(user_id => $pk->[0], shard => $shard);
+        $session->add($map);
+        return $shard;
+    },
+    model_func => sub {
+        my $driver = shift;
+        my ($session, $model) = @_;
+        my $subs = $driver->shards;
+
+        my $user_id = $model->user_id;
+        my $usermap = $session->get(UserMap => [$user_id]);
+        confess "no map for $user_id" unless $usermap;
+        return $usermap->shard;
     },
 );
 
-isa_ok $stack, 'Shrike::Driver::Stack';
-is $stack->get($class, [1]), undef, "absent from all stacks";
+isa_ok $sharder, 'Shrike::Driver::Sharder';
+my $mapper  = Shrike::Mapper->new();
+my $session = Shrike::Session->new( mapper => $mapper );
 
-ok $stack->insert($class, {"un", ''}, [1]), "inserted";
-for (1..3) {
-    is_deeply $h{$_}{"class:1"}, {"un", ''}, "driver $_ got it";
-}
+my $inflator = Shrike::Inflator->new;
+my $deflator = Shrike::Deflator::ObjectMethod->new;
+$mapper->map(User    => $sharder, $inflator, $deflator);
+$mapper->map(UserMap => $d[0],    $inflator, $deflator);
 
-## test cascading
-{
-    $h{1}{"class:2"} = {"2-1", ''};
-    $h{2}{"class:2"} = {"2-2", ''};
-    $h{3}{"class:2"} = {"2-3", ''};
+is $session->get('User', [1]), undef, "absent object";
 
-    $h{2}{"class:3"} = {"3-2", ''};
-    $h{3}{"class:3"} = {"3-3", ''};
+my $u = User->new(
+    first_name => 'Hugo',
+    last_name  => 'Reyes',
+    user_id    => 1, 
+);
+$DB::single = 1;
+$session->add($u);
 
-    $h{3}{"class:4"} = {"4-3", ''};
+$session->sync;
 
-    my @keys = ( [2], [3], [4], [4], undef, [10],);
-    my $res = $stack->get_multi($class, [ @keys ]);
-
-    isa_ok $res, 'ARRAY';
-    is scalar @$res, scalar @keys, "Same array size than input";
-    my $test = [ map { $_ ? keys %$_ : undef } @$res ];
-    is_deeply $test, [ "2-1", "3-2", "4-3", "4-3", undef, undef], "multi worked";
-}
+my $u2 = $session->lookup(User => [1]);
+use YAML; warn Dump $u2;
