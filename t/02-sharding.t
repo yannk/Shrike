@@ -12,6 +12,7 @@ use Shrike::Mapper;
 use Shrike::Session;
 use Shrike::Inflator;
 use Shrike::Deflator::ObjectMethod;
+use Shrike::PK;
 
 ## 3 RAM stacks
 my %h = ( 1 => {}, 2 => {}, 3 => {} );
@@ -21,7 +22,7 @@ for (1..3) {
 }
 
 use_ok 'User';
-use_ok 'UserMap';
+use_ok 'UserMap', "UserMap is an object just to make things complicated";
 
 ## Driver::Sharder::Random->new( shards => 3 );
 my $sharder = Shrike::Driver::Sharder->new(
@@ -38,18 +39,17 @@ my $sharder = Shrike::Driver::Sharder->new(
         my $driver = shift;
         my ($session, $model_class, $data, $pk) = @_;
         my $subs = $driver->shards;
-        my $shard = int rand scalar @$subs + 1;
-        use Carp; Carp::confess('x');
+        my $shard = int (rand scalar @$subs) + 1;
         my $map = UserMap->new(user_id => $pk->[0], shard => $shard);
         $session->add($map);
         return $shard;
     },
     model_func => sub {
         my $driver = shift;
-        my ($session, $model) = @_;
+        my ($session, $model_class, $data, $pk) = @_;
         my $subs = $driver->shards;
 
-        my $user_id = $model->user_id;
+        my $user_id = $data->{user_id};
         my $usermap = $session->get(UserMap => [$user_id]);
         confess "no map for $user_id" unless $usermap;
         return $usermap->shard;
@@ -62,8 +62,13 @@ my $session = Shrike::Session->new( mapper => $mapper );
 
 my $inflator = Shrike::Inflator->new;
 my $deflator = Shrike::Deflator::ObjectMethod->new;
-$mapper->map(User    => $sharder, $inflator, $deflator);
-$mapper->map(UserMap => $d[0],    $inflator, $deflator);
+my $i = 0;
+my $pk_generator = Shrike::PK->new( generate_cb => sub {
+    my $model = shift;
+    return [ $model->user_id || $i++ ];
+});
+$mapper->map(User    => $sharder, $pk_generator, $inflator, $deflator);
+$mapper->map(UserMap => $d[0],    $pk_generator, $inflator, $deflator);
 
 is $session->get('User', [1]), undef, "absent object";
 
@@ -77,5 +82,15 @@ $session->add($u);
 
 $session->sync;
 
-my $u2 = $session->lookup(User => [1]);
-use YAML; warn Dump $u2;
+my $u2 = $session->get(User => [1]);
+ok $u2, "Got our sharded object back";
+isa_ok $u2, 'User';
+is_deeply $u2->pk, [1], "the same PK we asked for";
+is $u2->first_name, "Hugo";
+
+$u2->first_name("Hurley");
+$session->sync;
+$u2 = $session->get(User => [1]);
+is $u2->first_name, "Hurley", "Got updated first name";
+my $map = $session->get(UserMap => [1]);
+like $map->shard, qr/[123]/, "shard is " . $map->shard;

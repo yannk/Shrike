@@ -18,25 +18,48 @@ has deflator => (
     handles => ['deflate'],
 );
 
+has pk_generator => (
+    is => 'ro',
+    isa => 'Shrike::PK',
+    handles => {
+        generate_pk => 'generate',
+    },
+);
+
 sub get {
     my $map = shift;
-    my ($session, $model_class, @args) = @_;
+    my ($session, $model_class, $pk, @args) = @_;
     my $driver = $map->driver;
     my $data = $driver->get(@_);
     return unless $data;
-    return $map->inflate($data, $model_class);
+    my $model = $map->inflate($data, $model_class);
+    $model->pk($pk);
+    return $model;
 }
 
 sub get_multi {
     my $map = shift;
-    my ($session, $model_class, @args) = @_;
+    my ($session, $model_class, $pks, @args) = @_;
     my $driver = $map->driver;
     my $data_list = $driver->get_multi(@_);
     return [] unless $data_list;
     my $inflator = $map->inflator;
     my $inflate = $inflator->can('inflate');
     croak "Can't inflate because I don't have an inflator" unless $inflate;
-    return [ map { $inflate->($inflator, $_, $model_class) } @$data_list ];
+
+    my @models;
+    my $i = -1;
+    for (@$data_list) {
+        $i++;
+        unless (defined $_) {
+            push @models, undef;
+            next;
+        }
+        push @models, $inflate->($inflator, $_, $model_class);
+        $models[-1]->pk( $pks->[$i] );
+    }
+    return \@models;
+    #return [ map { $inflate->($inflator, $_, $model_class) } @$data_list ];
 }
 
 sub insert {
@@ -45,8 +68,10 @@ sub insert {
     my $data = $map->deflate($model)
         or croak "Cannot deflate $model";
     my $model_class = ref $model; 
-    my $pk = $model->pk;
-    return $map->driver->insert($session, $model_class, $data, $pk, @args); 
+    my $pk = $map->generate_pk($model);
+    $map->driver->insert($session, $model_class, $data, $pk, @args); 
+    $model->pk($pk);
+    return 1;
 }
 
 sub replace {

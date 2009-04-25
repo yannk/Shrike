@@ -6,7 +6,7 @@ use base 'Shrike::Deflator';
 
 =head1 NAME
 
-Shrike::Deflator::InObject
+Shrike::Deflator::ObjectObject
 
 =head1 DESCRIPTION
 

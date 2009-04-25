@@ -18,7 +18,8 @@ has in_memory => (
     isa => 'ArrayRef[Item]',
     default => sub { [] },
     provides => {
-        push => 'add_to_memory',
+        push  => 'add_to_memory',
+        shift => 'next_in_memory',
     },
 ); 
 
@@ -71,6 +72,7 @@ sub add {
         unless $session->mapper->has_map_for(ref $model);
 
     ## grep { $seen++ } ?
+    use Carp; warn Carp::longmess("ADD $model");
     $session->add_to_memory($model);
     $session->bind($model);
     return;
@@ -96,24 +98,25 @@ sub sync {
             my $dirty = $session->is_dirty($model);
             warn "Updating $model $dirty";
             next unless $session->is_dirty($model);
-            $map->update($session, $mapper, $model);
+            $map->update($session, $model);
             ## XXX check success failure of the update
             $session->mark_as_synced($model);
         }
     }
 
     ## delete from the list of ephemeral and insert object
-    while (my $model = shift @{ $session->in_memory }) {
-        warn "insert $model";
+    use YAML; warn "GOT in memomry "  . scalar @{ $session->in_memory };
+    while (my $model = $session->next_in_memory) {
+        #use YAML; warn Dump $model;
         my $model_class = ref $model;
         my $map = $mapper->map_for($model_class);
+        warn "insert $model => $map";
         $map->insert($session, $model);
         ## add the object to the persistent list
         $session->in_store->{$model_class}->{$model->pk_str} = $model;
         weaken $session->in_store->{$model_class}->{$model->pk_str};
         $session->mark_as_synced($model);
     }
-
     ## XXX delete case
     return 1;
 }

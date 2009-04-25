@@ -32,10 +32,10 @@ my $sharder = Shrike::Driver::Sharder->new(
         my $user_id = $pk->[0];
         my $subs = $driver->shards;
         ## this is pretty stupid, but this is a driver test, remember
-        #my $usermap = $session->lookup(UserMap => [$user_id]);
+        #my $usermap = $session->get(UserMap => [$user_id]);
         #my $i = $usermap->shard;
         my $i = $user_id % scalar @$subs;
-        return $i ? $i - 1 : scalar @$subs - 1;
+        return $i ? $i : scalar @$subs;
     },
     new_func => sub {
         my $driver = shift;
@@ -46,7 +46,7 @@ my $sharder = Shrike::Driver::Sharder->new(
         #return int rand scalar @$subs;
         my $user_id = $pk->[0];
         my $i = $user_id % scalar @$subs;
-        return $i ? $i - 1 : scalar @$subs - 1;
+        return $i ? $i : scalar @$subs;
     },
     model_func => sub {
         my $driver = shift;
@@ -57,7 +57,7 @@ my $sharder = Shrike::Driver::Sharder->new(
         my $user_id = $model->user_id;
         ## this is pretty stupid, but this is a driver test, remember
         my $i = $user_id % scalar @$subs;
-        return $i ? $i - 1 : scalar @$subs - 1;
+        return $i ? $i : scalar @$subs;
     },
 );
 

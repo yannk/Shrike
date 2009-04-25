@@ -46,7 +46,7 @@ of transformation: C<$inflator> and C<$deflator>
 
 sub map {
     my $mapper = shift;
-    my ($model_class, $driver, $inflator, $deflator) = @_;
+    my ($model_class, $driver, $pk_generator, $inflator, $deflator) = @_;
 
     croak "There is already a map for $model_class"
         if $mapper->has_map_for($model_class);
@@ -63,11 +63,12 @@ sub map {
     }
     $mapper->export_methods($model_class, $driver);
     my $map = Shrike::Map->new(
-        class    => $model_class,
-        driver   => $driver,
-        inflator => $inflator,
-        deflator => $deflator,
-        mapper   => $mapper,  # used?
+        class        => $model_class,
+        driver       => $driver,
+        pk_generator => $pk_generator,
+        inflator     => $inflator,
+        deflator     => $deflator,
+        mapper       => $mapper,  # used?
     );
     $mapper->set_map_for($model_class => $map);
     return $map;
@@ -84,7 +85,7 @@ sub after_has_changed {
         ## need to clean up after the end of the session
         my $session = $instance->{__shrike_session};
         if ($session) {
-            $session->mark_as_dirty($instance, $attr);
+            $session->mark_dirty($instance, $attr);
         }
         else {
             warn "Object is probably not mapped yet";
