@@ -148,6 +148,7 @@ sub get_multi {
 
     ## now, we know about this object, let's make a note of it
     for my $model (@$models) {
+        next unless $model;
         $session->in_store->{$model_class}->{$model->pk_str} = $model;
         $session->bind($model);
     }
