@@ -56,7 +56,7 @@ couple your objects with their datastore(s).
 
 =head2 What is Shrike?
 
-Shrike is a experiment to persist Moose objects in various data tore, with web 
+Shrike is a experiment to persist Moose objects in various data store, with web 
 applications in mind.
 
 =head2 Is it an ORM?
