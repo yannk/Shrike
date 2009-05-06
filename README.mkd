@@ -2,8 +2,8 @@
 
 ## What is Shrike
 
-Shrike is a experiment to persist Moose objects in various data store, with web 
-applications in mind.
+Shrike is a experiment: A framework to persist Moose objects in various
+data store, with web applications in mind.
 
 ## WARNING
 
