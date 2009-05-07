@@ -14,7 +14,7 @@ use Shrike::Inflator;
 use Shrike::Deflator::ObjectMethod;
 use Shrike::PK;
 
-## 3 RAM stacks
+## 3 RAM shards
 my %h = ( 1 => {}, 2 => {}, 3 => {} );
 my @d;
 for (1..3) {
